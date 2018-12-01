@@ -1,3 +1,7 @@
+# Playground jupyternotebook is in /files/silkygames
+# needs to be fixed to work with windows
+
+---------------------------------------------------------------------
 # heroprotocol.py
 
 heroprotocol.py is a series of reference [Python](https://www.python.org/downloads/) scripts and standalone tool to decode Heroes of the Storm replay files into Python data structures.
