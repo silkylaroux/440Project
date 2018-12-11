@@ -477,6 +477,56 @@ def steepest(x, f, gradf, *fargs, **params):
     return {'x':newx, 'f':newf, 'nIterations':i, 'xtrace':xtrace[:i,:], 'ftrace':ftrace[:i], 'reason':"did not converge"}
 
 
+def confusionMatrixOld(actual,predicted,classes):
+    nc = len(classes)
+    confmat = np.zeros((nc,nc))
+    for ri in range(nc):
+        trues = actual==classes[ri]
+        # print 'confusionMatrix: sum(trues) is ', np.sum(trues),'for classes[ri]',classes[ri]
+        for ci in range(nc):
+            confmat[ri,ci] = np.sum(predicted[trues] == classes[ci]) / float(np.sum(trues))
+    return confmat
+
+
+def confusionMatrix(actual,predicted,classes,probabilities=None,probabilityThreshold=None):
+    nc = len(classes)
+    if probabilities is not None:
+        predictedClassIndices = np.zeros(predicted.shape,dtype=np.int)
+        for i,cl in enumerate(classes):
+            predictedClassIndices[predicted == cl] = i
+        probabilities = probabilities[np.arange(probabilities.shape[0]), predictedClassIndices.squeeze()]
+    confmat = np.zeros((nc,nc+2)) # for samples above threshold this class and samples this class
+    for ri in range(nc):
+        trues = (actual==classes[ri]).squeeze()
+        predictedThisClass = predicted[trues]
+        if probabilities is None:
+            keep = trues
+            predictedThisClassAboveThreshold = predictedThisClass
+        else:
+            keep = probabilities[trues] >= probabilityThreshold
+            predictedThisClassAboveThreshold = predictedThisClass[keep]
+        # print 'confusionMatrix: sum(trues) is ', np.sum(trues),'for classes[ri]',classes[ri]
+        for ci in range(nc):
+            confmat[ri,ci] = np.sum(predictedThisClassAboveThreshold == classes[ci]) / float(np.sum(keep))
+        confmat[ri,nc] = np.sum(keep)
+        confmat[ri,nc+1] = np.sum(trues)
+    return confmat
+
+def printConfusionMatrix(confmat,classes):
+    print('   ',end='')
+    for i in classes:
+        print('%5d' % (i), end='')
+    print('\n    ',end='')
+    print('%s' % '------'*len(classes))
+    for i,t in enumerate(classes):
+        print('%2d |' % (t), end='')
+        for i1,t1 in enumerate(classes):
+            if confmat[i,i1] == 0:
+                print('  0  ',end='')
+            else:
+                print('%5.1f' % (100*confmat[i,i1]), end='')
+        print('   (%d / %d)' % (int(confmat[i,len(classes)]), int(confmat[i,len(classes)+1])))
+
 
 if __name__ == "__main__":
 
